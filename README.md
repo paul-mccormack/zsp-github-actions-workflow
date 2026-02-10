@@ -85,6 +85,7 @@ Target Resource Group: rg-ukw-sandbox-pmc-zsp-deploy-test
 Github Repo Secrets
 
 AZURE_CLIENT_ID<br>
+AZURE_SP_OBJECT_ID<br>
 AZURE_TENANT_ID<br>
 AZURE_SUBSCRIPTION_ID<br>
 AZURE_FUNCTION_KEY<br>

@@ -34,7 +34,7 @@ jobs:
             -H "Content-Type: application/json" \
             -H "x-functions-key: ${{ secrets.AZURE_FUNCTION_KEY }}" \
             -d '{
-              "sp_object_id": "${{ secrets.AZURE_CLIENT_ID }}",
+              "sp_object_id": "${{ secrets.AZURE_SP_OBJECT_ID }}",
               "scope": "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.rgName }}",
               "role": "Contributor",
               "duration_minutes": 5,
