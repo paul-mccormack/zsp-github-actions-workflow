@@ -30,7 +30,7 @@ jobs:
 
       - name: Get Access to Azure
         run: |
-          curl -X POST "${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access" \
+          curl -X POST "https://${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access" \
             -H "Content-Type: application/json" \
             -H "x-functions-key: ${{ secrets.AZURE_FUNCTION_KEY }}" \
             -d '{
