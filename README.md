@@ -6,6 +6,11 @@ This repo is being used to test out the use of Zero Standing Privilege (ZSP) Gat
 
 The Zero Standing Privilege Gateway was made by Jerrad Dahlager, More information about the ZSP Gateway and how to deploy it can be found in his GitHub repo: [zsp-azure-lab](https://github.com/j-dahl7/zsp-azure-lab).
 
+## Requirements
+
+The Function App Identity must have User Access Administrator role applied to the scope where it will be managing access.<br>
+In this test, the Function App will be managing access to the resource group "rg-ukw-sandbox-pmc-zsp-deploy-test", so it needs to have the role assignment for that resource group or the parent subscription.
+
 ## Triggering the Function App for a human operator
 
 In bash:
