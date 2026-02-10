@@ -1,0 +1,69 @@
+{
+  // See https://aka.ms/bicep/config for more information on Bicep configuration options
+  // Press CTRL+SPACE/CMD+SPACE at any location to see Intellisense suggestions
+  "analyzers": {
+    "core": {
+      "enabled": true,
+      "rules": {
+        "no-unused-params": {
+          "level": "warning"
+        },
+        "no-unused-vars": {
+          "level": "warning"
+        },
+        "no-unused-existing-resources": {
+          "level": "warning"
+        },
+        "no-unnecessary-dependson": {
+          "level": "warning"
+        },
+        "secure-secrets-in-params": {
+          "level": "error"
+        },
+        "outputs-should-not-contain-secrets": {
+          "level": "error"
+        },
+        "use-secure-value-for-secure-inputs": {
+          "level": "error"
+        },
+        "secure-parameter-default": {
+          "level": "error"
+        },
+        "no-hardcoded-env-urls": {
+          "level": "warning",
+          "disallowedhosts": [
+            "api.loganalytics.io",
+            "api.loganalytics.iov1",
+            "asazure.windows.net",
+            "azuredatalakeanalytics.net",
+            "azuredatalakestore.net",
+            "batch.core.windows.net",
+            "core.windows.net",
+            "database.windows.net",
+            "datalake.azure.net",
+            "gallery.azure.com",
+            "graph.windows.net",
+            "login.microsoftonline.com",
+            "management.azure.com",
+            "management.core.windows.net",
+            "region.asazure.windows.net",
+            "trafficmanager.net",
+            "vault.azure.net"
+          ],
+          "excludedhosts": [
+            "schema.management.azure.com"
+          ]
+        },
+        "no-hardcoded-location": {
+          "level": "warning"
+        },
+        "adminusername-should-not-be-literal": {
+          "level": "warning"
+        }
+      }
+    }
+  },
+  "extensions": {
+    "microsoftGraphV1": "br:mcr.microsoft.com/bicep/extensions/microsoftgraph/v1.0:1.0.0"
+  }
+}

@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Deploy Azure Resources
+
+on:
+  push:
+    branches:
+        - main
+    paths:
+        - 'bicep/**'
+        - '.github/workflows/deploy.yml'
+        
+  workflow_dispatch:
+
+permissions:
+    contents: read
+    id-token: write
+    actions: read
+
+env:
+  rgName: rg-ukw-sandbox-pmc-zsp-deploy-test
+  location: ukwest
+
+jobs:
+  access:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v5
+
+      - name: Get Access to Azure
+        run: |
+          curl -X POST "${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access" \
+            -H "Content-Type: application/json" \
+            -H "x-functions-key: ${{ secrets.AZURE_FUNCTION_KEY }}" \
+            -d '{
+              "sp_object_id": "${{ secrets.AZURE_CLIENT_ID }}",
+              "scope": "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.rgName }}",
+              "role": "Contributor",
+              "duration_minutes": 10,
+              "workflow_id": "github-actions"
+              }'
+      
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: Check Permissions
+        uses: azure/powershell@v2
+        with:
+          inlineScript: |
+            Get-AzRoleAssignment
+          azPSVersion: 'latest'
+
+
+    
