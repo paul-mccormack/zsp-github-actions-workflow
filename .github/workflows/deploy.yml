@@ -41,6 +41,12 @@ jobs:
               "workflow_id": "github-actions"
               }'
       
+      - name: Wait for Azure Role Assignment
+        run: |
+          echo "Waiting for 60 seconds to allow Azure Role Assignment to propagate..."
+          sleep 60
+        shell: bash
+
       - name: Azure Login
         uses: azure/login@v2
         with:
