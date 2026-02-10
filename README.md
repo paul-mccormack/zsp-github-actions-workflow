@@ -83,7 +83,7 @@ curl -X POST "${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access" \
   -H "x-functions-key: ${{ secrets.AZURE_FUNCTION_KEY }}" \
   -d '{
     "sp_object_id": "${{ secrets.AZURE_SP_OBJECT_ID }}",
-    "scope": "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.rgName }}",
+    "scope": "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}",
     "role": "Contributor",
     "duration_minutes": 10,
     "workflow_id": "github-actions"
@@ -99,7 +99,7 @@ $headers = @{
 }
 $body = @{
     "sp_object_id"="${{ secrets.AZURE_SP_OBJECT_ID }}"
-    "scope"="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.rgName }}"
+    "scope"="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}"
     "role"="Contributor"
     "duration_minutes"=10
     "workflow_id"="github-actions"
