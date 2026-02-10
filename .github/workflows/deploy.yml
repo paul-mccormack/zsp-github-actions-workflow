@@ -43,8 +43,8 @@ jobs:
       
       - name: Wait for Azure Role Assignment
         run: |
-          echo "Waiting for 30 seconds to allow Azure Role Assignment to propagate..."
-          sleep 30
+          echo "Waiting for 15 seconds to allow Azure Role Assignment to propagate..."
+          sleep 15
         shell: bash
 
       - name: Azure Login

@@ -6,6 +6,11 @@ This repo is being used to test out the use of Zero Standing Privilege (ZSP) Gat
 
 The Zero Standing Privilege Gateway was made by Jerrad Dahlager, More information about the ZSP Gateway and how to deploy it can be found in his GitHub repo: [zsp-azure-lab](https://github.com/j-dahl7/zsp-azure-lab).
 
+Access for service principals is based on assigning the Azure IAM role directly to the service princial.<br>
+Human operator access is granted by adding the user to an Entra group that has the required role assignment.<br><br>
+
+When the function app grants access, it will start revokation timer, which will automatically remove the access after the specified duration.  The function app will also log the access request and revokation in Log Analytics.
+
 ## Requirements
 
 You need to have the ZSP Gateway Function App deployed and configured.
@@ -15,73 +20,6 @@ You will need to create a service principal in your Entra/Azure environment for 
 The Function App Identity must have User Access Administrator role applied to the scope where it will be managing access.<br>
 In this test, the Function App will be managing access to the resource group "rg-ukw-sandbox-pmc-zsp-deploy-test", so it needs to have the role assignment for that resource group or the parent subscription.
 
-## Triggering the Function App for a human operator
-
-In bash:
-
-```bash
-curl -X POST "https://<Function app url>/api/admin-access" \
-  -H "Content-Type: application/json" \
-  -H "x-functions-key: <Function app key>" \
-  -d '{
-    "user_id": "Entra user object ID",
-    "group_id": "Entra group object ID",
-    "duration_minutes": 10,
-    "justification": "Testing123456"
-  }'
-```
-
-In PowerShell:
-
-```powershell
-$uri = "https://<Function app url>/api/admin-access"
-$headers = @{
-    "Content-Type"="application/json"
-    "x-functions-key"="<Function app key>"
-}
-$body = @{
-    "user_id"="Entra user object ID"
-    "group_id"="Entra group object ID"
-    "duration_minutes"=10
-    "justification"="Testing123456"
-} | ConvertTo-Json
-
-Invoke-WebRequest -Uri $uri -Method "POST" -Headers $headers -Body $body
-```
-## Triggering the Function App for a managed identity
-
-In bash:
-
-```bash
-curl -X POST "<Function app url>/api/nhi-access" \
-  -H "Content-Type: application/json" \
-  -H "x-functions-key: <Function app key>" \
-  -d '{
-    "sp_object_id": "<Entra service principal object ID>",
-    "scope": "/subscriptions/---/resourceGroups/<Target Resource Group>",
-    "role": "Contributor",
-    "duration_minutes": 10,
-    "workflow_id": "github-actions"
-    }'
-```
-In PowerShell:
-
-```powershell
-$uri = "https://<Function app url>/api/nhi-access"
-$headers = @{
-    "Content-Type"="application/json"
-    "x-functions-key"="<Function app key>"
-}
-$body = @{
-    "sp_object_id"="<Entra service principal object ID>"
-    "scope"="/subscriptions/---/resourceGroups/<Target Resource Group>"
-    "role"="Contributor"
-    "duration_minutes"=10
-    "workflow_id"="github-actions"
-} | ConvertTo-Json
-
-Invoke-WebRequest -Uri $uri -Method "POST" -Headers $headers -Body $body
-```
 ## GitHub Repository Setup
 
 The following Github Repo Secrets will need to be created:
@@ -94,3 +32,79 @@ The following Github Repo Secrets will need to be created:
 |AZURE_SUBSCRIPTION_ID | The ID of the target Azure subscription. |
 |AZURE_FUNCTION_KEY | The function key for the ZSP Gateway Function App. |
 |AZURE_FUNCTION_URL | The URL of the ZSP Gateway Function App. |
+
+## Triggering the function app to grant access
+
+The function app is triggered by a HTTP POST request. The snips below show examples of how to trigger the function app for both human operator access and service principal access in both PowerShell and bash.
+
+### Human Operator
+
+> [!NOTE]
+> I haven't used references to GitHub Secrets in the human operator examples below as I would expect this feature would be used by the operator in a terminal.  The human operator examples are just to show how it's done.
+
+In bash:
+
+```bash
+curl -X POST "https://<Azure Function App URL>/api/admin-access" \
+  -H "Content-Type: application/json" \
+  -H "x-functions-key: <Azure Function App key>" \
+  -d '{
+    "user_id": "Entra User Object ID",
+    "group_id": "Entra Group Object ID",
+    "duration_minutes": 10,
+    "justification": "Testing123456"
+  }'
+```
+
+In PowerShell:
+
+```powershell
+$uri = "https://<Azure Function App URL>/api/admin-access"
+$headers = @{
+    "Content-Type"="application/json"
+    "x-functions-key"="<Azure Function App key>"
+}
+$body = @{
+    "user_id"="Entra User Object ID"
+    "group_id"="Entra Group Object ID"
+    "duration_minutes"=10
+    "justification"="Testing123456"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri $uri -Method "POST" -Headers $headers -Body $body
+```
+### Service Prinicipal
+
+In bash:
+
+```bash
+curl -X POST "${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access" \
+  -H "Content-Type: application/json" \
+  -H "x-functions-key: ${{ secrets.AZURE_FUNCTION_KEY }}" \
+  -d '{
+    "sp_object_id": "${{ secrets.AZURE_SP_OBJECT_ID }}",
+    "scope": "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.rgName }}",
+    "role": "Contributor",
+    "duration_minutes": 10,
+    "workflow_id": "github-actions"
+    }'
+```
+In PowerShell:
+
+```powershell
+$uri = "https://${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access"
+$headers = @{
+    "Content-Type"="application/json"
+    "x-functions-key"="${{ secrets.AZURE_FUNCTION_KEY }}"
+}
+$body = @{
+    "sp_object_id"="${{ secrets.AZURE_SP_OBJECT_ID }}"
+    "scope"="/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.rgName }}"
+    "role"="Contributor"
+    "duration_minutes"=10
+    "workflow_id"="github-actions"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri $uri -Method "POST" -Headers $headers -Body $body
+```
+
