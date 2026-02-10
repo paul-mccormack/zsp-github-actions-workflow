@@ -2,14 +2,14 @@
 
 ## Introduction
 
-This repo is being used to test out the use of Zero Standing Privilege (ZSP) Gateway with GitHub Actions. The ZSP Gateway is a tool that allows human operators and managed identities to securely access resources without having to grant permanent standing privileges. The workflow will request access to the resource, and the ZSP Gateway will grant time limited access to the resource.
+This repo is to test the use of Zero Standing Privilege (ZSP) Gateway with GitHub Actions. The ZSP Gateway is a tool that allows human operators, service principals and AI Agents to securely access Azure resources without requiring permanent standing privileges. The workflow will request access to the resource, and the ZSP Gateway will grant time limited access to the resource.
 
-The Zero Standing Privilege Gateway was made by Jerrad Dahlager, More information about the ZSP Gateway and how to deploy it can be found in his GitHub repo: [zsp-azure-lab](https://github.com/j-dahl7/zsp-azure-lab).
+The Zero Standing Privilege Gateway was made by Jerrad Dahlager, More information about the ZSP Gateway and how to deploy it can be found in his GitHub repo [zsp-azure-lab](https://github.com/j-dahl7/zsp-azure-lab) and linked [blog post](https://nineliveszerotrust.com/blog/zero-standing-privilege-azure/).
 
-Access for service principals is based on assigning the Azure IAM role directly to the service princial.<br>
+Access for service principals is based on assigning the Azure IAM role directly to the service principal.<br>
 Human operator access is granted by adding the user to an Entra group that has the required role assignment.<br><br>
 
-When the function app grants access, it will start revokation timer, which will automatically remove the access after the specified duration.  The function app will also log the access request and revokation in Log Analytics.
+When the function app grants access, it will start a revocation timer, which will automatically remove the access after the specified duration.  The function app will also log the access request and revocation in Log Analytics.
 
 ## Requirements
 
@@ -18,7 +18,7 @@ You need to have the ZSP Gateway Function App deployed and configured.
 You will need to create a service principal in your Entra/Azure environment for the GitHub Actions workflow. I used my PowerShell script to create a new service principal with OIDC federated credentials, This script will create the role assignment on the target scope automatically.  I manually removed it to carry out this test.  The PowerShell script can be found [here](https://github.com/paul-mccormack/actions-entra-auth).
 
 The Function App Identity must have User Access Administrator role applied to the scope where it will be managing access.<br>
-In this test, the Function App will be managing access to the resource group "rg-ukw-sandbox-pmc-zsp-deploy-test", so it needs to have the role assignment for that resource group or the parent subscription.
+In this test, the Function App will be managing access to my sandbox subscription.
 
 ## GitHub Repository Setup
 
