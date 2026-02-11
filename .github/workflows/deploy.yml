@@ -29,25 +29,25 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      # - name: Get Access to Azure
-      #   run: |
-      #     curl -X POST "https://${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access" \
-      #       -H "Content-Type: application/json" \
-      #       -H "x-functions-key: ${{ secrets.AZURE_FUNCTION_KEY }}" \
-      #       -d '{
-      #         "sp_object_id": "${{ secrets.AZURE_SP_OBJECT_ID }}",
-      #         "scope": "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}",
-      #         "role": "Contributor",
-      #         "duration_minutes": 5,
-      #         "workflow_id": "github-actions"
-      #         }'
+      - name: Get Access to Azure
+        run: |
+          curl -X POST "https://${{ secrets.AZURE_FUNCTION_URL }}/api/nhi-access" \
+            -H "Content-Type: application/json" \
+            -H "x-functions-key: ${{ secrets.AZURE_FUNCTION_KEY }}" \
+            -d '{
+              "sp_object_id": "${{ secrets.AZURE_SP_OBJECT_ID }}",
+              "scope": "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "role": "Contributor",
+              "duration_minutes": 5,
+              "workflow_id": "github-actions"
+              }'
       
-      # - name: Wait for Azure Role Assignment
-      # # This seems to be required as there is a delay between the role assignment being created and it being available for use.
-      #   run: |
-      #     echo "Waiting for 20 seconds to allow Azure Role Assignment to propagate..."
-      #     sleep 20
-      #   shell: bash
+      - name: Wait for Azure Role Assignment
+      # This seems to be required as there is a delay between the role assignment being created and it being available for use.
+        run: |
+          echo "Waiting for 30 seconds to allow Azure Role Assignment to propagate..."
+          sleep 30
+        shell: bash
 
       - name: Azure Login
         uses: azure/login@v2
