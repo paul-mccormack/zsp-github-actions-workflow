@@ -110,5 +110,87 @@ Invoke-WebRequest -Uri $uri -Method "POST" -Headers $headers -Body $body
 
 See the worklow file in this repo for an example of how to trigger the function app to grant a service principal access: [.github/workflows/deploy.yml](.github/workflows/deploy.yml)
 
+## Looking at the logs
 
+From the GitHub Actions workflow we can see the identity successfully using the Function App to get a role assignment:
 
+```bash
+Run curl -X POST "https://***/api/nhi-access" \
+  curl -X POST "https://***/api/nhi-access" \
+    -H "Content-Type: application/json" \
+    -H "x-functions-key: ***" \
+    -d '{
+      "sp_object_id": "***",
+      "scope": "/subscriptions/***",
+      "role": "Contributor",
+      "duration_minutes": 5,
+      "workflow_id": "github-actions"
+      }'
+  shell: /usr/bin/bash -e {0}
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100   225    0     0  100   225      0    145  0:00:01  0:00:01 --:--:--   146
+100   225    0     0  100   225      0     88  0:00:02  0:00:02 --:--:--    88
+100   225    0     0  100   225      0     63  0:00:03  0:00:03 --:--:--    63
+100   225    0     0  100   225      0     49  0:00:04  0:00:04 --:--:--    49
+100   225    0     0  100   225      0     40  0:00:05  0:00:05 --:--:--    40
+100   225    0     0  100   225      0     34  0:00:06  0:00:06 --:--:--     0
+100   225    0     0  100   225      0     29  0:00:07  0:00:07 --:--:--     0
+100   225    0     0  100   225      0     26  0:00:08  0:00:08 --:--:--     0
+100   225    0     0  100   225      0     23  0:00:09  0:00:09 --:--:--     0
+100   225    0     0  100   225      0     21  0:00:10  0:00:10 --:--:--     0
+100   225    0     0  100   225      0     19  0:00:11  0:00:11 --:--:--     0
+100   777    0   552  100   225     45     18  0:00:12  0:00:12 --:--:--   119
+100   777    0   552  100   225     45     18  0:00:12  0:00:12 --:--:--   152
+{"status": "granted", "assignment_id": "/subscriptions/***/providers/Microsoft.Authorization/roleAssignments/60ba996a-4570-4327-bad3-30be63ed20bb", "assignment_name": "60ba996a-4570-4327-bad3-30be63ed20bb", "sp_object_id": "***", "scope": "/subscriptions/***", "role": "Contributor", "expires_at": "2026-02-11T10:02:33.815275+00:00", "duration_minutes": 5, "workflow_id": "github-actions", "orchestrator_instance_id": "c59ca506056b46d8bce00520dffaf0be"}
+```
+Follwed by a successful login to Azure:
+
+```bash
+Run azure/login@v2
+  with:
+    tenant-id: ***
+    client-id: ***
+    subscription-id: ***
+    enable-AzPSSession: true
+    environment: azurecloud
+    allow-no-subscriptions: false
+    audience: api://AzureADTokenExchange
+    auth-type: SERVICE_PRINCIPAL
+Running Azure CLI Login.
+/usr/bin/az cloud set -n azurecloud
+Done setting cloud: "azurecloud"
+Federated token details:
+ issuer - https://token.actions.githubusercontent.com
+ subject claim - repo:paul-mccormack/zsp-github-actions-workflow:ref:refs/heads/main
+ audience - api://AzureADTokenExchange
+ job_workflow_ref - paul-mccormack/zsp-github-actions-workflow/.github/workflows/deploy.yml@refs/heads/main
+Attempting Azure CLI login by using OIDC...
+Subscription is set successfully.
+Azure CLI login succeeds by using OIDC.
+Running Azure PowerShell Login.
+{
+  Result: '/usr/share/az_14.6.0/Az.Accounts/5.3.2/Az.Accounts.psd1',
+  Success: true
+}
+Federated token details:
+ issuer - https://token.actions.githubusercontent.com
+ subject claim - repo:paul-mccormack/zsp-github-actions-workflow:ref:refs/heads/main
+ audience - api://AzureADTokenExchange
+ job_workflow_ref - paul-mccormack/zsp-github-actions-workflow/.github/workflows/deploy.yml@refs/heads/main
+Attempting Azure PowerShell login by using OIDC...
+{ Success: true, Result: '' }
+Running Azure PowerShell Login successfully.
+```
+Then waiting a few minutes for the access to be revoked you can check the function app logs and see the both the grants and revokes:
+
+![Function App Logs](images/fn_app_logs.jpg)
+
+## Potential problems and troubleshooting
+
+Azure RBAC operates using "eventual consistency", which results in a delay between the role assignment being created and it being available for use.<br>
+This can cause problems for the workflow as it may try to access the resource before the role assignment has propagated, resulting in an access denied error.<br>
+To mitigate this, I have added a step in the workflow to wait for 30 seconds after the function app grants access and before the worker attempts to login.  This seems to be enough of a delay to allow a role assignment at a subscriptions scope to propegate but in a complex environment making a role assignment at a Management Group scope can take up to 10 minutes to propegate.<br><br>
+Depending on your use case you might need to adjust the delay time to accomodate for this.
