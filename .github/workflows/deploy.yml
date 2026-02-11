@@ -1,4 +1,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# This workflow will send a HTTP POST request to a ZSP Gateway Function App to request a role assignment for a service principal.
+# The workflow will then wait for 15 seconds to allow the role assignment to propagate, then attempt to login to Azure using the service principal credentials and check the role assignment.
+# Writen by Paul McCormack.
+# https://www.linkedin.com/in/paul-mccormack-08b04a6/
+# https://howdoyou.cloud/
+# https://github.com/paul-mccormack
 
 name: Deploy Azure Resources
 

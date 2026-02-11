@@ -108,3 +108,7 @@ $body = @{
 Invoke-WebRequest -Uri $uri -Method "POST" -Headers $headers -Body $body
 ```
 
+See the worklow file in this repo for an example of how to trigger the function app to grant a service principal access: [.github/workflows/deploy.yml](.github/workflows/deploy.yml)
+
+
+
